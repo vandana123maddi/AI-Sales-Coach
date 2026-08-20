@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Delete, Phone, PhoneOff, RotateCcw } from "lucide-react";
+import { Call, Device } from "@twilio/voice-sdk";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,9 +32,127 @@ function DialPadKey({ value, label, onClick }: DialPadKeyProps) {
 
 export function AISalesCoachDialPad() {
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [status] = useState<
+  const [status, setStatus] = useState<
     "Ready" | "Dialing" | "Ringing" | "Connected" | "Ended" | "Error"
   >("Ready");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [deviceReady, setDeviceReady] = useState(false);
+  const [hasActiveCall, setHasActiveCall] = useState(false);
+  const deviceRef = useRef<Device | null>(null);
+  const activeCallRef = useRef<Call | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function initializeDevice() {
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+        const response = await fetch(`${apiBaseUrl}/token`, {
+          method: "POST",
+        });
+        const data = (await response.json()) as { token?: string; error?: string };
+
+        if (!response.ok || !data.token) {
+          throw new Error(data.error || "Unable to get a Twilio access token");
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        const device = new Device(data.token);
+        deviceRef.current = device;
+
+        device.on(Device.EventName.Registered, () => {
+          if (!cancelled) {
+            setDeviceReady(true);
+            setStatus("Ready");
+            setErrorMessage(null);
+          }
+        });
+        device.on(Device.EventName.Error, (error) => {
+          if (!cancelled) {
+            setDeviceReady(false);
+            setStatus("Error");
+            setErrorMessage(error.message || "Twilio device initialization failed");
+          }
+        });
+
+        await device.register();
+      } catch (error) {
+        if (!cancelled) {
+          setStatus("Error");
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "Twilio device initialization failed",
+          );
+        }
+      }
+    }
+
+    void initializeDevice();
+
+    return () => {
+      cancelled = true;
+      activeCallRef.current?.disconnect();
+      activeCallRef.current = null;
+      deviceRef.current?.destroy();
+      deviceRef.current = null;
+    };
+  }, []);
+
+  function bindCallEvents(call: Call) {
+    activeCallRef.current = call;
+    setHasActiveCall(true);
+    setStatus("Dialing");
+    setErrorMessage(null);
+
+    call.on(Call.EventName.Ringing, () => setStatus("Ringing"));
+    call.on(Call.EventName.Accepted, () => setStatus("Connected"));
+    call.on(Call.EventName.Disconnected, () => {
+      activeCallRef.current = null;
+      setHasActiveCall(false);
+      setStatus("Ended");
+    });
+    call.on(Call.EventName.Cancel, () => {
+      activeCallRef.current = null;
+      setHasActiveCall(false);
+      setStatus("Ended");
+    });
+    call.on(Call.EventName.Error, (error) => {
+      activeCallRef.current = null;
+      setHasActiveCall(false);
+      setStatus("Error");
+      setErrorMessage(error.message || "The call failed");
+    });
+  }
+
+  function handleCall() {
+    if (!deviceReady || !deviceRef.current || hasActiveCall) {
+      return;
+    }
+
+    if (!/^\+[1-9]\d{1,14}$/.test(phoneNumber)) {
+      setStatus("Error");
+      setErrorMessage("Enter a valid E.164 number, such as +14155550123");
+      return;
+    }
+
+    try {
+      const call = deviceRef.current.connect({
+        params: { To: phoneNumber },
+      });
+      bindCallEvents(call);
+    } catch (error) {
+      setStatus("Error");
+      setErrorMessage(error instanceof Error ? error.message : "The call failed");
+    }
+  }
+
+  function handleHangUp() {
+    activeCallRef.current?.disconnect();
+  }
 
   function appendDigit(value: string) {
     setPhoneNumber((current) => `${current}${value}`);
@@ -88,7 +207,7 @@ export function AISalesCoachDialPad() {
           aria-describedby="dial-pad-status"
         />
         <p id="dial-pad-status" className="mt-2 text-center text-xs text-muted-foreground">
-          Enter an E.164 number to get started
+          {errorMessage || "Enter an E.164 number to get started"}
         </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
@@ -128,7 +247,8 @@ export function AISalesCoachDialPad() {
             type="button"
             variant="outline"
             className="h-11 rounded-xl"
-            disabled
+            disabled={!hasActiveCall}
+            onClick={handleHangUp}
             aria-label="Hang Up"
           >
             <PhoneOff className="size-4" />
@@ -139,7 +259,8 @@ export function AISalesCoachDialPad() {
         <Button
           type="button"
           className="mt-3 h-12 w-full rounded-xl"
-          disabled
+          disabled={!deviceReady || hasActiveCall}
+          onClick={handleCall}
           aria-label="Call"
         >
           <Phone className="size-4" />
