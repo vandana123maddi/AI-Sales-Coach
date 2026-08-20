@@ -108,19 +108,19 @@ export function AISalesCoachDialPad() {
     setStatus("Dialing");
     setErrorMessage(null);
 
-    call.on(Call.EventName.Ringing, () => setStatus("Ringing"));
-    call.on(Call.EventName.Accepted, () => setStatus("Connected"));
-    call.on(Call.EventName.Disconnected, () => {
+    call.on("ringing", () => setStatus("Ringing"));
+    call.on("accept", () => setStatus("Connected"));
+    call.on("disconnect", () => {
       activeCallRef.current = null;
       setHasActiveCall(false);
       setStatus("Ended");
     });
-    call.on(Call.EventName.Cancel, () => {
+    call.on("cancel", () => {
       activeCallRef.current = null;
       setHasActiveCall(false);
       setStatus("Ended");
     });
-    call.on(Call.EventName.Error, (error) => {
+    call.on("error", (error) => {
       activeCallRef.current = null;
       setHasActiveCall(false);
       setStatus("Error");
@@ -128,7 +128,7 @@ export function AISalesCoachDialPad() {
     });
   }
 
-  function handleCall() {
+  async function handleCall() {
     if (!deviceReady || !deviceRef.current || hasActiveCall) {
       return;
     }
@@ -140,7 +140,7 @@ export function AISalesCoachDialPad() {
     }
 
     try {
-      const call = deviceRef.current.connect({
+      const call = await deviceRef.current.connect({
         params: { To: phoneNumber },
       });
       bindCallEvents(call);
@@ -260,7 +260,7 @@ export function AISalesCoachDialPad() {
           type="button"
           className="mt-3 h-12 w-full rounded-xl"
           disabled={!deviceReady || hasActiveCall}
-          onClick={handleCall}
+          onClick={() => void handleCall()}
           aria-label="Call"
         >
           <Phone className="size-4" />
