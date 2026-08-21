@@ -238,15 +238,7 @@ This project is a prototype and has important limitations that should be documen
 - sensitive provider credentials should be kept out of logs and UI code,
 - only public-facing endpoints should be configured for Twilio callbacks.
 
-## 17. Assignment mapping
 
-Quantum Gandiva AI Deliverables
-
-- Deliverable 1 — Live demonstration
-- Deliverable 2 — Source code
-- Deliverable 3 — README
-- Deliverable 4 — Domain research + prompt design
-- Deliverable 5 — System design
 
 This repository includes:
 
