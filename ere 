@@ -1,3 +1,16 @@
 TWILIO_ACCOUNT_SID=ACdc8fbf929459c16915e570c8c1c3b31a
 TWILIO_AUTH_TOKEN=1a1e1c9d07eb437c754e9090c2ba7955
 TWILIO_PHONE_NUMBER=+17372508034
+TWILIO_AUTH_TOKEN=1a1e1c9d07eb437c754e9090c2ba7955
+TWILIO_PHONE_NUMBER=+17372508034
+
+# Required by Twilio webhooks and by the configured TwiML App Voice URL. This
+# must be a public HTTPS URL (for example an ngrok HTTPS forwarding URL), not localhost.
+TWILIO_PUBLIC_BASE_URL=https://smugness-spruce-hangup.ngrok-free.dev
+
+# Required only for the browser salesperson conference participant. Create an
+# API Key and a TwiML App whose Voice URL is $TWILIO_PUBLIC_BASE_URL/api/voice.
+TWILIO_API_KEY_SID=SK113f389590bae88c9cdee0bba30b417f
+TWILIO_API_KEY_SECRET=yujekigxGl7ZJ4m0brPKEOIwg8rwSMSZ
+TWILIO_TWIML_APP_SID=AP9866927ec1797d1120e8b362bd47a8da
+
