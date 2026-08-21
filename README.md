@@ -18,9 +18,7 @@ This repository contains a TypeScript prototype for guiding live real-estate sal
 
 It also includes a demo mode that simulates the same transcript and coaching flow without requiring live external providers.
 
-## 3. Assignment objective
 
-This project is a prototype built for the Quantum Gandiva AI Sales Coach assignment. The objective is to evaluate a sales coach that helps an agent during real-estate conversations by identifying conversation stage, objections, urgency, sentiment, and the best next action grounded in the actual transcript.
 
 ## 4. Architecture overview
 
@@ -214,9 +212,6 @@ If the Deepgram API key is not configured or the Deepgram stream cannot connect,
 
 The Voice routes validate the Twilio signature. If it is invalid, the request is rejected. The app also validates the TwiML App Voice URL to ensure it matches the configured public base URL.
 
-### WebSocket failures
-
-A Media Stream socket may fail or disconnect during a live session. The session logic attempts to close streams and update session state, but real websocket reliability still depends on public connectivity and provider health.
 
 ### Call termination cleanup
 
