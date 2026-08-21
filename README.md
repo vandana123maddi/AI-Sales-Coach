@@ -88,7 +88,7 @@ This is the actual implemented flow in the repository. The live path is driven b
 | Twilio Media Streams | Real-time audio ingestion from live calls | Provides the required WebSocket audio stream for transcription |
 | WebSocket | Twilio Media Stream connection | Required by the live streaming pipeline |
 | Deepgram | Real-time speech-to-text | Used for final transcript generation from Twilio audio |
-| OpenAI-compatible LLM endpoint | Sales Coach and summary analysis | The API sends prompt payloads to the configured chat-completions endpoint |
+| Gemmini-compatible LLM endpoint | Sales Coach and summary analysis | The API sends prompt payloads to the configured chat-completions endpoint |
 | SSE | Live transcript delivery to the frontend | Used for session transcript and state events |
 | pnpm workspaces | Monorepo package management | Organizes the API server, mockup sandbox, and shared libs |
 
@@ -111,7 +111,6 @@ The source of truth for the server-side environment is the template in the API p
 
 For the repo, the local template is at [artifacts/api-server/.env.example](artifacts/api-server/.env.example). The .gitignore explicitly ignores .env files and keeps the template checked in.
 
-## 9. Installation
 
 ### Prerequisites
 
