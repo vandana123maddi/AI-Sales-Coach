@@ -11,6 +11,10 @@ out-tsc
 # dependencies
 node_modules
 
+# Local backend credentials (including accidental filename whitespace variants)
+artifacts/api-server/.env*
+!artifacts/api-server/.env.example
+
 # IDEs and editors
 /.idea
 .project
